@@ -282,7 +282,7 @@ $$
     - [todo: How $h$ was set]
 
 ::: {.comment .fragment}
-Disagree with these numbers? We have an app for that! [add link]
+Disagree with these numbers? We have an app for that! <https://aluby-icfis-simulation.share.connect.posit.cloud/>
 :::
 
 <!--
@@ -889,6 +889,7 @@ studies land.
 - Amanda Luby `aluby@carleton.edu`
 - Maria Cuellar `mcuellar@sas.upenn.edu`
 - Code and simulations: `github.com/aluby/icfis-2026-talk`
+- Shiny app: `https://aluby-icfis-simulation.share.connect.posit.cloud/`
 :::
 
 :::: comment-right

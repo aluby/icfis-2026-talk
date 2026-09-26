@@ -888,11 +888,13 @@ studies land.
 ::: {.nonincremental}
 - Amanda Luby `aluby@carleton.edu`
 - Maria Cuellar `mcuellar@sas.upenn.edu`
-- Code and simulations: `github.com/TODO-owner/icfis-2026-talk`
+- Code and simulations: `github.com/aluby/icfis-2026-talk`
 :::
 
 :::: comment-right
-### References
+```{=html}
+<h3>References</h3>
+```
 
 ::: {#refs}
 :::
@@ -904,11 +906,6 @@ studies land.
 
 ::: {.notes}
 ~0.5 min. Leave this slide up through Q&A.
-:::
-
-## References {.smaller}
-
-::: {#refs}
 :::
 
 # Backup Slides

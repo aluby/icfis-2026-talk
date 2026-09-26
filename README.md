@@ -37,7 +37,17 @@ These files were generated in the research repo (`mariacuellar/validity-firearms
 
 Numbers quoted in slide prose for the two case studies (e.g. FPR/FNR estimates) come from `case_study_inconclusive.qmd` and `case_study_nonrepresentative.qmd` in that repo; recheck them if either is re-run.
 
+## Optional: static hosting of the app with shinylive
+
+```r
+# stage only what the app needs, then export
+dir.create("/tmp/app/R", recursive = TRUE)
+file.copy("app.R", "/tmp/app/"); file.copy(list.files("R", full.names = TRUE), "/tmp/app/R/")
+shinylive::export("/tmp/app", "docs/app")   # then commit docs/app; Pages serves it at /app/
+```
+
+The first visit registers a service worker, so it needs one reload; the app then runs entirely in the browser.
+
 ## TODO before publishing
 
-- Replace `TODO-owner` in the "Thank you" slide with the real repo URL and add the hosted-app link.
-- The Shiny app needs a server host (shinyapps.io / Posit Connect Cloud); GitHub Pages only serves the slides.
+- The Shiny app needs a server host (shinyapps.io / Posit Connect Cloud)

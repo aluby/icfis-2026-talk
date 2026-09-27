@@ -3,7 +3,9 @@ title: "Remediable and Non-Remediable Flaws in Forensic Validation Studies"
 subtitle: ""
 author:
   - name: "Amanda Luby"
+    affiliation: "Carleton College"
   - name: "Maria Cuellar"
+    affiliation: "University of Pennsylvania"
 date: last-modified
 bibliography: references.bib
 format:
@@ -13,7 +15,9 @@ format:
     incremental: true
     footer: "ICFIS 2026"
     embed-resources: true
-    # TODO: swap in institution logo 
+    # TODO: swap in institution logo
+revealjs-plugins:
+  - spotlight
 execute: 
   echo: false
   warning: false
@@ -63,7 +67,7 @@ only if there's time for a second remediable-flaw example.
 
 ## Big-picture context
 
-- NAS (2009) and PCAST (2016): scientific validity of firearms examination has not been established
+- NAS (2009) and PCAST (2016): scientific validity of forensic firearm comparison has not been established
 - US Context: 
     - Daubert Standard: Is there a **known error rate** for the technique?
 - Recent large-scale black-box validation studies have attempted to remedy this (including Ames II/@monson2023accuracy)
@@ -303,7 +307,33 @@ two defaults are fixed at plausible values (0.8, 0.5), not estimated.
 
 ```{r}
 # Pre-computed from the Ames II data by R/prepare_ames2_slide_data.R
-ames2_counts <- readr::read_csv(here::here("data/ames2_firearm_counts.csv"), show_col_types = FALSE)
+ames2_counts <- readr::read_csv(here::here("data/ames2_firearm_counts.csv"), show_col_types = FALSE) |>
+  mutate(m_nm = factor(recode(m_nm, M = "SS", NM = "DS"), levels = c("SS", "DS")))
+
+# Renders a 2x3 table of *values* (not fixed labels) with the same row/column
+# order and correct/incorrect/inconclusive coloring as the reference
+# decision-table used elsewhere in the talk: rows Same-source (SS), then
+# Different-source (DS); columns Identification, Inconclusive, Elimination.
+# `props` needs one row per level of `row_var` (in SS, DS order) and columns
+# Identification/Inconclusive/Elimination.
+decision_value_table <- function(props, digits = 2) {
+  cell_class <- list(
+    c("correct", "inconclusive", "incorrect"),   # Same-source row
+    c("incorrect", "inconclusive", "correct")    # Different-source row
+  )
+  row_label <- c("Same-source (SS)", "Different-source (DS)")
+  fmt <- function(x) formatC(x, format = "f", digits = digits)
+  rows <- purrr::map_chr(1:2, function(i) {
+    vals <- fmt(c(props$Identification[i], props$Inconclusive[i], props$Elimination[i]))
+    cells <- paste0('<td class="', cell_class[[i]], '">', vals, "</td>", collapse = "")
+    paste0('<tr><th scope="row">', row_label[i], "</th>", cells, "</tr>")
+  })
+  knitr::asis_output(paste0(
+    '<table class="decision-table">',
+    "<thead><tr><th></th><th>Identification</th><th>Inconclusive</th><th>Elimination</th></tr></thead>",
+    "<tbody>", paste(rows, collapse = "\n"), "</tbody></table>"
+  ))
+}
 
 # Real-study response proportions (missing/unsuitable responses excluded)
 ames2_counts |>
@@ -313,9 +343,8 @@ ames2_counts |>
   mutate(p = n / sum(n)) |>
   select(-n) |>
   pivot_wider(names_from = response, values_from = p, values_fill = 0) |>
-  column_to_rownames("m_nm") |>
-  round(2) |>
-  knitr::kable()
+  arrange(m_nm) |>
+  decision_value_table()
 ```
 
 ::: {.fragment}
@@ -400,18 +429,17 @@ studies_100 <- purrr::map_dfr(1:100, function(s) {
 ```{r}
 one_study |>
   mutate(
-    ground_truth_label = factor(
-      str_to_title(ground_truth_label),
-      levels = c("Same-Source", "Different-Source")
-    ),
-    gt_label = ifelse(ground_truth_label == "Same-Source", "M", "NM"),
-    response = str_sub(str_to_title(response), 1, 4)
+    m_nm = factor(if_else(ground_truth_label == "same-source", "SS", "DS"), levels = c("SS", "DS")),
+    response = str_to_title(response)
   ) |>
-  select(gt_label, response) |>
-  table() |>
-  prop.table(1) |>
-  round(2) |>
-  knitr::kable()
+  count(m_nm, response) |>
+  group_by(m_nm) |>
+  mutate(p = n / sum(n)) |>
+  ungroup() |>
+  select(-n) |>
+  pivot_wider(names_from = response, values_from = p, values_fill = 0) |>
+  arrange(m_nm) |>
+  decision_value_table()
 ```
 
 :::
@@ -711,49 +739,84 @@ ames2_counts |>
   knitr::kable(digits = 3)
 ```
 
-- Support for a "type" effect
+. . .
+
+&rarr; Support for a "type" effect
 
 
 
 ## Ames II: differences within firearm type
 
-Some firearms are more/less likely to have certain responses
+Some firearms produce markings that are easier/harder to compare
 
-  - support for individual firearm effect
 
-```{r}
-#| fig-width: 10
-#| fig-height: 5
+
+```{r ames2-within-type-data}
 ames2_long <- ames2_counts |>
   mutate(firearm = fct_reorder(firearm, firearm_order),
-         response = na_if(response, "NA"))
+         response = na_if(response, "NA"),
+         type = ifelse(ber == "Beretta", ber, "Ruger"))
 
 # Overall % inconclusive within each facet (pooled over responses). Missing
 # responses ("NA") stay in the denominator, matching the bars, which show
 # them as their own grey category.
 pct_inc <- ames2_long |>
-  group_by(ber, m_nm) |>
+  group_by(type, m_nm) |>
   summarize(pct_inc = sum(n[response %in% "Inconclusive"]) / sum(n), .groups = "drop")
 
-ames2_long |>
-  ggplot(aes(x = firearm, y = n, fill = response)) + 
-  geom_col(position = "fill") + 
-  geom_hline(data = pct_inc, aes(yintercept = pct_inc), linetype = "dotted", linewidth = .8, col = "white") +
-  # geom_label(
-  #   data = pct_inc,
-  #   aes(x = Inf, y = pct_inc, label = paste0("avg: ", scales::percent(pct_inc, accuracy = 1))),
-  #   inherit.aes = FALSE, hjust = 1, fill = "white", fontface = "bold", size = 3.5
-  # ) +
-  facet_grid(cols = vars(ber), rows = vars(m_nm), scales = "free_x") + 
-  scale_fill_manual(
-    values = c(Elimination = saguaro[["blue"]], Identification = saguaro[["amber"]], Inconclusive = saguaro[["green"]]),
-    na.value = "grey85"
-  ) + 
-  theme_minimal(base_size = 18) +
-  theme(legend.position = "top") + 
-  labs(fill = "", x = "individual_firearm", y = "Proportion of responses")
-  
+# Same plot, restricted to a subset of (type, ground truth) panels -- used to
+# build the facet grid up one step at a time. `m_nm` is already a factor
+# (SS, DS) and facet_grid()'s default `drop = TRUE` means a filtered-out
+# level's strip just doesn't appear, rather than showing an empty panel.
+plot_ames2_within_type <- function(types, gts) {
+  ames2_long |>
+    filter(type %in% types, m_nm %in% gts) |>
+    ggplot(aes(x = firearm, y = n, fill = response)) +
+    geom_col(position = "fill") +
+    geom_hline(
+      data = pct_inc |> filter(type %in% types, m_nm %in% gts),
+      aes(yintercept = pct_inc), linetype = "dotted", linewidth = .8, col = "white"
+    ) +
+    facet_grid(cols = vars(type), rows = vars(m_nm), scales = "free_x") +
+    scale_fill_manual(
+      values = c(Elimination = saguaro[["blue"]], Identification = saguaro[["amber"]], Inconclusive = saguaro[["green"]]),
+      na.value = "grey85"
+    ) +
+    scale_y_continuous(labels = scales::percent) +
+    theme_minimal(base_size = 18) +
+    theme(legend.position = "top") +
+    labs(fill = "", x = "Individual firearm", y = "Proportion of responses")
+}
 ```
+
+::: {.r-stack}
+
+```{r ames2-within-type-1-ss-beretta}
+#| fig-width: 12
+#| fig-height: 5
+#| classes: fragment
+plot_ames2_within_type("Beretta", "SS")
+```
+
+```{r ames2-within-type-2-beretta}
+#| fig-width: 12
+#| fig-height: 5
+#| classes: fragment
+plot_ames2_within_type("Beretta", c("SS", "DS"))
+```
+
+```{r ames2-within-type-3-all}
+#| fig-width: 12
+#| fig-height: 5
+#| classes: fragment
+plot_ames2_within_type(c("Beretta", "Ruger"), c("SS", "DS"))
+```
+
+:::
+
+. . . 
+
+  &rarr; support for individual firearm effect
 
 ::: {.notes}
 Build up this graph: show that there's firearm make/model variability by comparing Ber/NonBer and then highlight the individual firearm variability
@@ -813,6 +876,41 @@ item — an earlier version had every examiner see every item.
   sampled per type
 - Convenience sample, "reweighted": FPR **0.21%**, FNR **0.42%** — barely moved from the original convenience sample
  -->
+
+## Simulation grid
+
+Tested all 3 study designs across three levels of **examiner** heterogeneity and **difficulty** heterogeneity with 200 replicates per combination
+
+:::: {.columns}
+
+::: {.column width="45%" .fragment .nonincremental}
+**Difficulty heterogeneity**
+
+- Low: $\sigma_{\text{type}} = .6$, $\sigma_{\text{individ}} = .45$
+- Medium: $\sigma_{\text{type}} = 1.2$, $\sigma_{\text{individ}} = .9$
+- High: $\sigma_{\text{type}} = 1.8$, $\sigma_{\text{individ}} = 1.35$
+
+:::
+
+::: {.column width="10%" }
+
+:::
+
+::: {.column width="45%" .fragment .nonincremental}
+
+**Examiner heterogeneity**
+
+- Low: $\sigma_{\text{s}} = .25$
+- Medium: $\sigma_{\text{s}} = .5$
+- High: $\sigma_{\text{s}} = 1$
+
+:::
+
+::::
+
+::: notes
+item heterogeneity moves together -- if individual variability outweighs type variability, we don't see the same effects
+:::
 
 ## Reweighting the convenience sample doesn't work
 
@@ -1065,6 +1163,32 @@ asked "what's left to do." Don't say "not implemented" for the firearm
 effect itself — it is; what's missing is the CI-coverage simulation loop
 on top of it.
 :::
+
+## Appendix: FDA precedent for bounding equivocal results {.smaller data-visibility="uncounted"}
+
+FDA's guidance on diagnostic tests flags discarding
+equivocal results as a common source of bias:
+
+::: {.definition}
+"If a test can (per the test instructions) produce a result which is
+anything other than positive or negative then it is not technically a
+qualitative test... Discarding or ignoring these results and performing
+the calculations in this guidance will likely result in biased
+performance estimates."
+:::
+
+::: {.fragment}
+Its recommended fix is the same two-sided bound used in Case Study 1:
+
+::: {.definition}
+"To address this issue, one option is to report two different sets of
+performance measures — one set of measures based on including the
+equivocal results with the test positive results [and] a second set of
+measures based on including the equivocal results with the test negative
+results."
+:::
+:::
+
 
 <!-- ## Appendix: is the "5x" just an artifact of our parameters? {.smaller}
 

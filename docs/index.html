@@ -1214,13 +1214,15 @@ display:block!important;
   <symbol id="bb-i-doc" viewbox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3 H20 L26 9 V29 H7 Z" /><path d="M20 3 V9 H26" /><path d="M11 14 H22 M11 18.5 H22 M11 23 H18" /></g></symbol>
 </defs>
 
-<!-- ===== Band: upstream / downstream ===== -->
+<!-- ===== Band: upstream / downstream (fragment 2: appears last) ===== -->
+<g class="fragment" data-fragment-index="1">
 <rect x="0" y="0" width="576" height="44" rx="4" fill="#127088" />
 <text class="band" x="14" y="19">UPSTREAM · STUDY DESIGN &amp; DATA GENERATION</text>
 <text class="bsub" x="14" y="36">Non-remediable flaws: A–C</text>
 <path d="M584 0 H976 L1000 22 L976 44 H584 Z" fill="#57643C" />
 <text class="band" x="598" y="19">DOWNSTREAM · DATA ANALYSIS</text>
 <text class="bsub" x="598" y="36">Partially remediable flaws: D–F</text>
+</g>
 
 <!-- ===== Row 1: study steps ===== -->
 <g><rect x="0" y="64" width="124" height="132" rx="6" fill="#EAF2F4" stroke="#127088" stroke-width="1.5" />
@@ -1265,7 +1267,8 @@ display:block!important;
 <text class="ttl" x="938.0" y="161" text-anchor="middle" style="font-size:16px">Report</text><text class="ttl" x="938.0" y="180" text-anchor="middle" style="font-size:16px">results</text>
 </g>
 
-<!-- ===== Row 2: flaws A–F (dashed line = the step where each flaw arises) ===== -->
+<!-- ===== Row 2: flaws A–F (fragment 1: appears before the band) ===== -->
+<g class="fragment" data-fragment-index="0">
 <path d="M208.0 198 V234 H85.0 V269" fill="none" stroke="#127088" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#bb-arr-up)" />
 <path d="M208.0 198 V234 H271.0 V269" fill="none" stroke="#127088" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#bb-arr-up)" />
 <path d="M354.0 198 V234 H457.0 V269" fill="none" stroke="#127088" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#bb-arr-up)" />
@@ -1307,6 +1310,7 @@ display:block!important;
 <text class="ttl" x="874" y="334" style="font-size:16px">Missing</text><text class="ttl" x="874" y="353" style="font-size:16px">data</text>
 <text class="dsc" x="874" y="378">Dropped without a</text>
 <text class="dsc" x="874" y="395">principled plan</text>
+</g>
 </g>
 </svg>
 <aside class="notes">
@@ -2137,11 +2141,11 @@ display:block!important;
 }</style></aside>
 </section></section>
 <section>
-<section id="backup-slides" class="title-slide slide level1 center">
+<section id="backup-slides" class="title-slide slide level1 center" data-visibility="uncounted">
 <h1>Backup Slides</h1>
 <!-- Not in the 30-minute budget — pull these up only if asked. -->
 </section>
-<section id="appendix-contextual-bias-extension-flaw-c" class="slide level2 smaller">
+<section id="appendix-contextual-bias-extension-flaw-c" class="slide level2 smaller" data-visibility="uncounted">
 <h2>Appendix: contextual-bias extension (Flaw C)</h2>
 <p>Hawthorne shift, calibrated to Scurich et al. (2025) blind vs. known-test inconclusive rates at the Houston Forensic Science Center:</p>
 <p><span class="math display">\[
@@ -2165,7 +2169,7 @@ overflow: hidden!important;
 display:block!important;
 }</style></aside>
 </section>
-<section id="appendix-missingness-extension-flaw-f" class="slide level2 smaller">
+<section id="appendix-missingness-extension-flaw-f" class="slide level2 smaller" data-visibility="uncounted">
 <h2>Appendix: missingness extension (Flaw F)</h2>
 <p><span class="math display">\[
 \text{error}_{ij} = \mathbb{1}\{R_{ij} = e(G_i)\}
@@ -2192,7 +2196,7 @@ overflow: hidden!important;
 display:block!important;
 }</style></aside>
 </section>
-<section id="appendix-whats-left-for-ci-coverage-flaw-e" class="slide level2 smaller">
+<section id="appendix-whats-left-for-ci-coverage-flaw-e" class="slide level2 smaller" data-visibility="uncounted">
 <h2>Appendix: what’s left for CI coverage (Flaw E)</h2>
 <p>Can re-use simulation infrastructure from Case Study 2:</p>
 <ul>

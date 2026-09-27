@@ -156,7 +156,7 @@ The population-average sensitivity (P(ID|Same Source)) and specificity (P(Elimin
 
 ## Flowchart: sorting the six flaws
 
-{{< include img/_flowchart.qmd >}}
+{{< include img/_flowchart_buildup.qmd >}}
 
 ::: notes
 Talk through first row/data collection process first. Then make flaws appear and talk about them very briefly. Then, add the top layer
@@ -992,11 +992,11 @@ studies land.
 ~0.5 min. Leave this slide up through Q&A.
 :::
 
-# Backup Slides
+# Backup Slides {data-visibility="uncounted"}
 
 <!-- Not in the 30-minute budget — pull these up only if asked. -->
 
-## Appendix: contextual-bias extension (Flaw C) {.smaller}
+## Appendix: contextual-bias extension (Flaw C) {.smaller data-visibility="uncounted"}
 
 Hawthorne shift, calibrated to Scurich et al. (2025) blind vs. known-test
 inconclusive rates at the Houston Forensic Science Center:
@@ -1019,7 +1019,7 @@ easy and hard items, which is exactly why it doesn't move conclusive-only
 error rates much. That's a modeling choice worth revisiting, not a result.
 :::
 
-## Appendix: missingness extension (Flaw F) {.smaller}
+## Appendix: missingness extension (Flaw F) {.smaller data-visibility="uncounted"}
 
 $$
 \text{error}_{ij} = \mathbb{1}\{R_{ij} = e(G_i)\}
@@ -1042,7 +1042,7 @@ deletion) error rates downward.
 Backup only.
 :::
 
-## Appendix: what's left for CI coverage (Flaw E) {.smaller}
+## Appendix: what's left for CI coverage (Flaw E) {.smaller data-visibility="uncounted"}
 
 Can re-use simulation infrastructure from Case Study 2:
 

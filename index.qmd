@@ -66,7 +66,7 @@ only if there's time for a second remediable-flaw example.
 - NAS (2009) and PCAST (2016): scientific validity of firearms examination has not been established
 - US Context: 
     - Daubert Standard: Is there a **known error rate** for the technique?
-- Recent large-scale black-box validation studies have attempted to remedy this (Ames I and II, Hicklin et al)
+- Recent large-scale black-box validation studies have attempted to remedy this (including Ames II/@monson2023accuracy)
 
 ## Motivation for this project
 
@@ -147,7 +147,7 @@ Go through these relatively quickly
 - Define the target quantity (the **estimand**)
 
 ::: {.definition .fragment}
-The population-average error rate (P(Error|Same Source) and P(Error|Different Source)), under casework-representative firearms, ammunition, examiners, and testing conditions.
+The population-average sensitivity (P(ID|Same Source)) and specificity (P(Elimination|Different Source)), under casework-representative firearms, ammunition, examiners, and testing conditions.
 :::
 
 - A flaw is **remediable** if, given the raw examiner-by-item responses, the estimand can still be estimated correctly (possibly with extra assumptions/new analyses)
@@ -182,10 +182,10 @@ Talk through first row/data collection process first. Then make flaws appear and
 <style>
   table.decision-table { width: 85%; margin: 0 auto 0.9em auto; border-collapse: separate;
                          border-spacing: 6px; text-align: center; font-size: 0.7em; }
-  table.decision-table th, table.decision-table td { border: none; padding: 0.35em 0.6em; }
+  table.decision-table th, table.decision-table td { border: none; padding: 0.35em 0.6em; text-align: center; }
   .reveal table.decision-table thead th { font-weight: bold; border-bottom: none; }
   table.decision-table tbody th { text-align: right; font-weight: bold; white-space: nowrap; }
-  table.decision-table td { color: white; font-weight: bold; border-radius: 4px; }
+  table.decision-table td { color: white; font-weight: bold; border-radius: 4px; text-align: center; }
   table.decision-table td.correct      { background: #1e6b3a; } /* dark green  */
   table.decision-table td.incorrect    { background: #8b1a1a; } /* dark red    */
   table.decision-table td.inconclusive { background: #9c7a00; } /* dark yellow */
@@ -278,8 +278,8 @@ $$
 - We used Ames II to benchmark most parameters:  
     - Cartridge cases (raw responses): baseline FPR, FNR, and inconclusive rates, fit by maximum likelihood
         - same-source and different-source items get *separate* inconclusive baselines: about 17% vs. 50%
-    - $\sigma_s$, $\sigma_d$, and $\sigma_\tau$ are based on ..... 
-    - [todo: How $h$ was set]
+    - $\sigma_\tau$, $\sigma_s$, $\sigma_d$ were estimated using profile maximum likelihood
+    - $h$: rate of "misleading" inconclusives. Ames II examiners also recorded *which way* an inconclusive leaned. (12% DS and 7% SS)
 
 ::: {.comment .fragment}
 Disagree with these numbers? We have an app for that! <https://aluby-icfis-simulation.share.connect.posit.cloud/>
@@ -420,18 +420,52 @@ one_study |>
 
 ## Setup: inconclusive handling (Flaw D)
 
+In the 2x2 setting, reporting the **error rates** is analagous to reporting **sensitivity** and **specificity**
+
+::: {.fragment}
+```{=html}
+<p class="decision-table-label">2×2 analog: identification / elimination</p>
+<table class="decision-table">
+  <thead>
+    <tr><th></th><th>Identification</th><th>Elimination</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Same-source (SS)</th>
+      <td class="correct">Correct</td>
+      <td class="incorrect">False negative</td>
+    </tr>
+    <tr>
+      <th scope="row">Different-source (DS)</th>
+      <td class="incorrect">False positive</td>
+      <td class="correct">Correct</td>
+    </tr>
+  </tbody>
+</table>
+```
+:::
+
+. . . 
+
+In the 2x3 setting, there's no way to reconstruct the sensitivity/specificity from the error rates alone (and vice-versa)
+
+::: fragment
 ```{=html}
 <style>
   table.decision-table { width: 85%; margin: 0 auto 0.9em auto; border-collapse: separate;
                          border-spacing: 6px; text-align: center; font-size: 0.7em; }
-  table.decision-table th, table.decision-table td { border: none; padding: 0.35em 0.6em; }
+  table.decision-table th, table.decision-table td { border: none; padding: 0.35em 0.6em; text-align: center; }
   .reveal table.decision-table thead th { font-weight: bold; border-bottom: none; }
   table.decision-table tbody th { text-align: right; font-weight: bold; white-space: nowrap; }
-  table.decision-table td { color: white; font-weight: bold; border-radius: 4px; }
+  table.decision-table td { color: white; font-weight: bold; border-radius: 4px; text-align: center; }
   table.decision-table td.correct      { background: #1e6b3a; } /* dark green  */
   table.decision-table td.incorrect    { background: #8b1a1a; } /* dark red    */
   table.decision-table td.inconclusive { background: #9c7a00; } /* dark yellow */
+  p.decision-table-label { text-align: center; font-family: 'IBM Plex Mono', monospace;
+                            font-size: 0.55em; letter-spacing: 0.06em; text-transform: uppercase;
+                            color: #5B6470; margin: 0.8em 0 0.1em; }
 </style>
+<p class="decision-table-label">2×3: identification / inconclusive / elimination</p>
 <table class="decision-table">
   <thead>
     <tr><th></th><th>Identification</th><th>Inconclusive</th><th>Elimination</th></tr>
@@ -453,7 +487,15 @@ one_study |>
 </table>
 ```
 
+:::
+
+
+
+## Setup: inconclusive handling (Flaw D)
+
 - Black-box studies handle inconclusive responses inconsistently
+    - Often, inconclusives are included in the denominator of the error rate
+    - Sometimes, inconclusives are removed entirely when reporting error rates
 - @cuellar2024methodological recommend a bounding procedure instead: recode
   every inconclusive as an identification, then as an elimination, and
   report **both** recomputed error rates as a range
@@ -470,7 +512,7 @@ one_study |>
     same-source analog for the false negative rate)
   - **Worst case**: recode every inconclusive as the error-favoring label,
     recompute
-- Compare to the "true" error rate ([ADD EXPLANATION])
+- Compare to the "true" error rate (FPR/FNR + $h \cdot$ Inc)
 - Repeat across 100 replicate studies
 
 ::: {.notes}
@@ -601,7 +643,7 @@ points_long |>
   ggplot(aes(x = setting)) +
   geom_errorbar(
     data = brackets, aes(ymin = reported, ymax = worst_case),
-    width = 0.18, linewidth = 0.9, color = saguaro[["blue"]]
+    width = 0.18, linewidth = 0.9, color = saguaro[["green"]]
   ) +
   geom_point(aes(y = value, shape = measure, color = measure), size = 3.5, stroke = 1.4) +
   facet_grid( ~ rate) +
@@ -652,9 +694,11 @@ be analyzed this way.
   a cumulative literature if combined with other studies 
 
 
-## Ames II (Cartridge Cases)
+## Ames II: differences between firearm type
 
 - 11 Ruger and 27 Beretta firearms were used to generate test cases
+
+- Beretta had *fewer* inconclusives on ground truth same-source, and *more* inconclusives on ground truth different source
 
 ```{r}
 #| classes: fragment
@@ -667,14 +711,15 @@ ames2_counts |>
   knitr::kable(digits = 3)
 ```
 
-- Beretta had *fewer* inconclusives on ground truth same-source, and *more* inconclusives on ground truth different source
 - Support for a "type" effect
 
 
 
-## Ames II: individual firearms
+## Ames II: differences within firearm type
 
-Some firearms are more/less likely to have certain responses: support for individual firearm effect
+Some firearms are more/less likely to have certain responses
+
+  - support for individual firearm effect
 
 ```{r}
 #| fig-width: 10
@@ -735,7 +780,7 @@ Last bullet point: some people have misunderstood our point and think that we ar
 Casework "population" of firearms: 8 types at different proportions
 
 1. **Convenience sample:** test cases are drawn from two firearm types (21% of casework by weight), 40 firearms each (80 total)
-2. **Cluster sample + reweighting:** A hypothetical alternative study covering all
+2. **Stratified sample + reweighting:** A hypothetical alternative study covering all
    eight types (10 firearms each, not in population-correct
    proportions) with type recorded as a covariate
 3. **Reweighting the convenience sample:** Applying reweighting to the
@@ -771,9 +816,7 @@ item — an earlier version had every examiner see every item.
 
 ## Reweighting the convenience sample doesn't work
 
-```{r nonrep-bias-figure}
-#| fig-width: 11
-#| fig-height: 6
+```{r nonrep-bias-data}
 # Data: data/sensitivity_nonrepresentative_grid.csv, written by
 # icfis/sensitivity_nonrepresentative.qmd (`grid_results`): one row per
 # heterogeneity setting x scenario x metric, summarizing `n_studies` simulated studies.
@@ -790,7 +833,7 @@ nonrep_colors <- c(
   "Full-coverage study (reweighted)"    = saguaro[["blue"]]
 )
 
-nonrep_grid |>
+nonrep_diff <- nonrep_grid |>
   filter(scenario %in% nonrep_scenarios) |>
   mutate(
     scenario = factor(scenario, levels = nonrep_scenarios),
@@ -800,31 +843,71 @@ nonrep_grid |>
     diff = mean_rate - true_rate,          # bias: estimate minus the true population rate
     diff_lo = q025 - true_rate,            # 2.5th-97.5th percentile across individual studies
     diff_hi = q975 - true_rate
-  ) |>
-  ggplot(aes(x = examiner_scenario, y = diff, color = scenario)) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
-  geom_pointrange(
-    aes(ymin = diff_lo, ymax = diff_hi),
-    position = position_dodge(width = 0.5), size = 0.5
-  ) +
-  facet_grid(
-    metric ~ difficulty_scenario,
-    labeller = labeller(difficulty_scenario = function(x) paste("Difficulty:", x))
-  ) +
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-  scale_color_manual(values = nonrep_colors) +
-  labs(
-    x = "Examiner heterogeneity",
-    y = "Estimated rate - true rate",
-    color = NULL,
-    subtitle = paste0(
-      "Points: mean over ", unique(nonrep_grid$n_studies), " simulated studies. ",
-      "Bars: 95% interval across individual studies."
-    )
-  ) +
-  theme_minimal(base_size = 15) +
-  theme(legend.position = "bottom")
+  )
+
+# Fixed across all three build-up fragments so the panels don't rescale as
+# series are added.
+nonrep_y_range <- range(0, nonrep_diff$diff_lo, nonrep_diff$diff_hi)
+
+# All three scenarios stay in the data and in the dodge on every fragment --
+# only `alpha` toggles a scenario invisible -- so points don't shift position
+# (position_dodge() sizes its offsets from how many groups are *present*)
+# and the legend (drop = FALSE) always shows all three keys in the same spot.
+plot_nonrep_bias <- function(included_scenarios) {
+  nonrep_diff |>
+    mutate(included = scenario %in% included_scenarios) |>
+    ggplot(aes(x = examiner_scenario, y = diff, color = scenario, alpha = included)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+    geom_pointrange(
+      aes(ymin = diff_lo, ymax = diff_hi),
+      position = position_dodge(width = 0.5), size = 0.5
+    ) +
+    facet_grid(
+      metric ~ difficulty_scenario,
+      labeller = labeller(difficulty_scenario = function(x) paste("Difficulty:", x))
+    ) +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = nonrep_y_range) +
+    scale_color_manual(values = nonrep_colors, limits = nonrep_scenarios, drop = FALSE) +
+    scale_alpha_manual(values = c(`TRUE` = 1, `FALSE` = 0), guide = "none") +
+    guides(color = guide_legend(override.aes = list(alpha = 1))) +
+    labs(
+      x = "Examiner heterogeneity",
+      y = "Estimated rate - true rate",
+      color = NULL,
+      subtitle = paste0(
+        "Points: mean over ", unique(nonrep_grid$n_studies), " simulated studies. ",
+        "Bars: 95% interval across individual studies."
+      )
+    ) +
+    theme_minimal(base_size = 15) +
+    theme(legend.position = "bottom")
+}
 ```
+
+::: {.r-stack}
+
+```{r nonrep-bias-1-convenience}
+#| fig-width: 11
+#| fig-height: 6
+#| classes: fragment
+plot_nonrep_bias("Convenience sample (naive)")
+```
+
+```{r nonrep-bias-2-reweighted}
+#| fig-width: 11
+#| fig-height: 6
+#| classes: fragment
+plot_nonrep_bias(c("Convenience sample (naive)", "Convenience sample (\"reweighted\")"))
+```
+
+```{r nonrep-bias-3-full}
+#| fig-width: 11
+#| fig-height: 6
+#| classes: fragment
+plot_nonrep_bias(nonrep_scenarios)
+```
+
+:::
 
 ::: {.notes}
 Figure code is in this slide's chunk; data are data/sensitivity_nonrepresentative_grid.csv,
@@ -939,11 +1022,11 @@ error rates much. That's a modeling choice worth revisiting, not a result.
 ## Appendix: missingness extension (Flaw F) {.smaller}
 
 $$
-\text{is\_error}_{ij} = \mathbb{1}\{R_{ij} = e(G_i)\}
+\text{error}_{ij} = \mathbb{1}\{R_{ij} = e(G_i)\}
 $$
 
 $$
-\pi^{miss}_{ij} = \operatorname{expit}\Big[\operatorname{logit}(0.05) + 0.8\,c_{ij} + 1.2\cdot\text{is\_error}_{ij} + 0.6\cdot\mathbb{1}\{R_{ij}=\text{"inconclusive"}\}\Big]
+\pi^{miss}_{ij} = \operatorname{expit}\Big[\operatorname{logit}(0.05) + 0.8\,c_{ij} + 1.2\cdot\text{error}_{ij} + 0.6\cdot\mathbb{1}\{R_{ij}=\text{inconclusive}\}\Big]
 $$
 
 $$
@@ -961,13 +1044,7 @@ Backup only.
 
 ## Appendix: what's left for CI coverage (Flaw E) {.smaller}
 
-The individual-firearm random effect itself is **already built and in
-use** — `make_firearm_population()` in `R/simulate_dgp_types.R`
-gives each type $K$ individual firearms $k = 1, \dots, K$, each with
-$f_k \sim N(0, \sigma_F^2)$, and case study 2 draws from it (40 or 10
-firearms per included type, depending on the scenario, for the same 80
-firearms total). What's *not* built is using that structure for CI
-coverage:
+Can re-use simulation infrastructure from Case Study 2:
 
 - Case study 2 uses the firearm layer for a **bias** demonstration
   (does reweighting recover the population mean?) — it never constructs

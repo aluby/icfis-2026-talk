@@ -67,7 +67,7 @@ only if there's time for a second remediable-flaw example.
 
 - NAS (2009) and PCAST (2016): scientific validity of forensic firearm comparison has not been established
 - US Context: 
-    - Daubert Standard: Is there a **known error rate** for the technique?
+    - Daubert Standard: Is there a **known or potential error rate** for the technique?
 - Recent large-scale black-box validation studies have attempted to remedy this (including Ames II/@monson2023accuracy)
 
 ## Motivation for this project
